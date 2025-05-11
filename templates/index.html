@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Queue Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --danger: #e63946;
+            --warning: #f77f00;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            font-size: 18px;
+        }
+        
+        .container {
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 40px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            opacity: 0.9;
+            font-weight: 300;
+            font-size: 1.4rem;
+        }
+        
+        .queue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .queue-card {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .queue-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            padding: 25px;
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .card-body {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .queue-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        .info-box {
+            text-align: center;
+            flex: 1;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 0 8px;
+        }
+        
+        .info-box.now-serving {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .info-box.current {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .queue-number {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .queue-label {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .btn {
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.3rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn i {
+            font-size: 1.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-next {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-serve {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-back {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-reset {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            font-size: 1.3rem;
+        }
+        
+        .loading.active {
+            opacity: 1;
+        }
+        
+        footer {
+            margin-top: 70px;
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .display-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.3rem;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            width: 300px;
+            margin: 30px auto 0;
+            transition: all 0.2s ease;
+        }
+        
+        .display-link:hover {
+            background-color: var(--secondary);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        @media (max-width: 992px) {
+            .queue-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .queue-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .queue-number {
+                font-size: 3rem;
+            }
+            
+            body {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingIndicator">Processing...</div>
+    
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-hospital"></i> Hospital Queue Management</h1>
+            <p class="subtitle">Efficient patient service management system</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="queue-grid">
+            {% for service, details in services.items() %}
+            <div class="queue-card" data-service="{{ service }}">
+                <div class="card-header">
+                    <i class="fas fa-user-md"></i> {{ service }}
+                </div>
+                <div class="card-body">
+                    <div class="queue-info">
+                        <div class="info-box now-serving">
+                            <div class="queue-label">NOW SERVING</div>
+                            <div class="queue-number" id="{{ service | replace(' ', '_') }}_serving">{{ details["prefix"] }}{{ details["serving"] }}</div>
+                        </div>
+                        <div class="info-box current">
+                            <div class="queue-label">CURRENT</div>
+                            <div class="queue-number" id="{{ service | replace(' ', '_') }}_current">{{ details["prefix"] }}{{ details["current"] }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-next" onclick="nextQueue('{{ service }}')">
+                            <i class="fas fa-forward"></i> Next
+                        </button>
+                        <button class="btn btn-serve" onclick="serveQueue('{{ service }}')">
+                            <i class="fas fa-check-circle"></i> Serve
+                        </button>
+                        <button class="btn btn-back" onclick="backQueue('{{ service }}')">
+                            <i class="fas fa-backward"></i> Back
+                        </button>
+                        <button class="btn btn-reset" onclick="resetQueue('{{ service }}')">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <a href="{{ url_for('display') }}" target="_blank" class="display-link">
+            <i class="fas fa-desktop"></i> Open Display Screen
+        </a>
+    </div>
+    <script>
+        function showLoading() {
+            document.getElementById('loadingIndicator').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingIndicator').classList.remove('active');
+        }
+
+        function updateUI(data) {
+            for (const [service, details] of Object.entries(data)) {
+                const serviceId = service.replace(/ /g, '_');
+                document.getElementById(`${serviceId}_current`).textContent = `${details.prefix}${details.current}`;
+                document.getElementById(`${serviceId}_serving`).textContent = `${details.prefix}${details.serving}`;
+            }
+        }
+        
+        async function callAPI(endpoint, service) {
+            showLoading();
+            try {
+                const response = await fetch(`/${endpoint}/${encodeURIComponent(service)}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                updateUI(data);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function nextQueue(service) {
+            callAPI('next', service);
+        }
+        
+        function serveQueue(service) {
+            callAPI('serve', service);
+        }
+        
+        function backQueue(service) {
+            callAPI('back', service);
+        }
+        
+        function resetQueue(service) {
+            if (confirm('Are you sure you want to reset this queue?')) {
+                callAPI('reset', service);
+            }
+        }
+    </script>
+</body>
+</html>

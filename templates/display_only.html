@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Queue Display</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 40px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            opacity: 0.9;
+            font-weight: 300;
+            font-size: 1.4rem;
+        }
+        
+        .display-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .service-card {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            }
+            50% {
+                box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+            }
+            100% {
+                box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            }
+        }
+        
+        .service-header {
+            padding: 20px;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1.8rem;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .service-body {
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .queue-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .service-label {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .service-number {
+            font-size: 4rem;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .service-number.updated {
+            color: #ff9500;
+            transform: scale(1.1);
+        }
+        
+        .now-serving-badge {
+            background-color: var(--success);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .time-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--dark);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        footer {
+            margin-top: 70px;
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .display-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .service-number {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="time-display" id="clock"></div>
+    
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-hospital"></i> Hospital Queue Display</h1>
+            <p class="subtitle">Now Serving</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="display-grid" id="serviceGrid">
+            {% for service, data in services.items() %}
+            <div class="service-card" data-service="{{ service }}">
+                <div class="service-header">
+                    <i class="fas fa-user-md"></i> {{ service }}
+                </div>
+                <div class="service-body">
+                    <div class="queue-info" style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 20px;">
+                        <div style="text-align: center; flex: 1; padding: 15px; border-radius: 12px; margin: 0 5px; background-color: var(--success); color: white;">
+                            <div style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">NOW SERVING</div>
+                            <div class="service-number" id="{{ service | replace(' ', '_') }}_serving_display">{{ data.prefix }}{{ data.serving }}</div>
+                        </div>
+                        <div style="text-align: center; flex: 1; padding: 15px; border-radius: 12px; margin: 0 5px; background-color: var(--accent); color: white;">
+                            <div style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">CURRENT</div>
+                            <div class="service-number" id="{{ service | replace(' ', '_') }}_current_display">{{ data.prefix }}{{ data.current }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        // Update the clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById('clock').textContent = timeString;
+        }
+        
+        // Update queue data from the server
+        async function updateQueueData() {
+            try {
+                const response = await fetch('/queue_status');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                
+                // Update each service card with new data
+                for (const [service, details] of Object.entries(data)) {
+                    const serviceId = service.replace(/ /g, '_');
+                    const servingElement = document.getElementById(`${serviceId}_serving_display`);
+                    const currentElement = document.getElementById(`${serviceId}_current_display`);
+                    
+                    // Update the serving number
+                    if (servingElement) {
+                        const currentServingValue = servingElement.textContent;
+                        const newServingValue = `${details.prefix}${details.serving}`;
+                        
+                        if (currentServingValue !== newServingValue) {
+                            // Add a brief highlight effect to show the update
+                            servingElement.textContent = newServingValue;
+                            servingElement.classList.add('updated');
+                            setTimeout(() => {
+                                servingElement.classList.remove('updated');
+                            }, 1000);
+                        }
+                    }
+                    
+                    // Update the current number
+                    if (currentElement) {
+                        const currentValue = currentElement.textContent;
+                        const newValue = `${details.prefix}${details.current}`;
+                        
+                        if (currentValue !== newValue) {
+                            // Add a brief highlight effect to show the update
+                            currentElement.textContent = newValue;
+                            currentElement.classList.add('updated');
+                            setTimeout(() => {
+                                currentElement.classList.remove('updated');
+                            }, 1000);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching queue data:', error);
+            }
+        }
+        
+        // Update clock immediately and then every second
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        // Update queue data immediately and then every 5 seconds
+        updateQueueData();
+        setInterval(updateQueueData, 3000);
+    </script>
+</body>
+</html>
